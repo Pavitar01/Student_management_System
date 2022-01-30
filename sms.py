@@ -17,8 +17,11 @@ class Student:
         self.roll_var = StringVar()
         self.email_var = StringVar()
         self.gender_var = StringVar()
-        self.dob_var = StringVar()
         self.contact_var = StringVar()
+        self.dob_var = StringVar()
+
+        self.search_s = StringVar()
+        self.search_text = StringVar()
 
         ####################### Manage Frame ###############################
 
@@ -99,12 +102,16 @@ class Student:
                                                                                                                 column=0,
                                                                                                                 padx=10,
                                                                                                                 pady=10)
-        update = Button(Btn_Frame, text="Update", width=10, bg="white", fg="darkblue").grid(row=0, column=1, padx=10,
-                                                                                         pady=10)
-        delete = Button(Btn_Frame, text="Delete", width=10, bg="white", fg="darkblue").grid(row=0, column=2, padx=10,
-                                                                                         pady=10)
-        clear = Button(Btn_Frame, text="Clear", width=10, bg="white", fg="darkblue").grid(row=0, column=3, padx=10,
-                                                                                        pady=10)
+        update = Button(Btn_Frame, text="Update", width=10, command=self.update_data, bg="white", fg="darkblue").grid(
+            row=0, column=1, padx=10,
+            pady=10)
+        delete = Button(Btn_Frame, text="Delete", width=10, command=self.Delete_Data, bg="white", fg="darkblue").grid(
+            row=0, column=2, padx=10,
+            pady=10)
+        clear = Button(Btn_Frame, text="Clear", width=10, command=self.clear1, bg="white", fg="darkblue").grid(row=0,
+                                                                                                               column=3,
+                                                                                                               padx=10,
+                                                                                                               pady=10)
 
         ####################### data Frame ##############################
 
@@ -114,18 +121,20 @@ class Student:
         search = Label(Data_Frame, text="Search By", font=("times new roman", 20, "bold"), bg="crimson", fg="white")
         search.grid(row=0, column=0, pady=10, padx=20, sticky='w')
 
-        s_search = ttk.Combobox(Data_Frame, width=10, font=("times new roman", 15, "bold"), state='readonly')
-        s_search["values"] = ("Roll no.", "Name", "Contact")
+        s_search = ttk.Combobox(Data_Frame, textvariable=self.search_s, width=10, font=("times new roman", 15, "bold"),
+                                state='readonly')
+        s_search["values"] = ("roll_no", "name", "contact")
         s_search.grid(row=0, column=1, pady=10, padx=20, sticky='w')
 
-        txt_search = Entry(Data_Frame, width=15, font=("times new roman", 13, "bold"), bd=5, relief=GROOVE)
+        txt_search = Entry(Data_Frame, textvariable=self.search_text, width=15, font=("times new roman", 13, "bold"),
+                           bd=5, relief=GROOVE)
         txt_search.grid(row=0, column=2, pady=10, padx=20, sticky='w')
 
-        searchbtn = Button(Data_Frame, text="Search", width=10, pady='5', bg="white", fg="darkblue").grid(row=0,
+        searchbtn = Button(Data_Frame, text="Search",command=self.search_data ,width=10, pady='5', bg="white", fg="darkblue").grid(row=0,
                                                                                                           column=3,
                                                                                                           padx=10,
                                                                                                           pady=10)
-        Showall = Button(Data_Frame, text="Show All", width=10, pady='5', bg="white", fg="darkblue").grid(row=0,
+        Showall = Button(Data_Frame, text="Show All",command=self.fetch_data, width=10, pady='5', bg="white", fg="darkblue").grid(row=0,
                                                                                                           column=4,
                                                                                                           padx=10,
                                                                                                           pady=10)
@@ -136,48 +145,123 @@ class Student:
         Table_Frame.place(x=10, y=70, width=750, height=500)
         Scroll_x = Scrollbar(Table_Frame, orient=HORIZONTAL)
         Scroll_y = Scrollbar(Table_Frame, orient=VERTICAL)
-        Student_table = ttk.Treeview(Table_Frame,
-                                     columns=('Name', 'Roll no.', 'Email', 'Gender', 'Contact', 'D.O.B', 'Address'))
+        self.Student_table = ttk.Treeview(Table_Frame, columns=(
+            'Name', 'Roll no.', 'Email', 'Gender', 'Contact', 'D.O.B', 'Address'))
 
         Scroll_x.pack(side=BOTTOM, fill=X)
         Scroll_y.pack(side=RIGHT, fill=Y)
-        Scroll_x.config(command=Student_table.xview)
-        Scroll_y.config(command=Student_table.yview)
-        Student_table.heading('Name', text='Name')
-        Student_table.heading('Roll no.', text='Roll no.')
-        Student_table.heading('Email', text='Email')
-        Student_table.heading('Gender', text='Gender')
-        Student_table.heading('Contact', text='Contact')
-        Student_table.heading('D.O.B', text='D.O.B')
-        Student_table.heading('Address', text='Address')
-        Student_table.column('Name', width=10)
-        Student_table.column('Roll no.', width=100)
-        Student_table.column('Email', width=100)
-        Student_table.column('Gender', width=100)
-        Student_table.column('Contact', width=100)
-        Student_table.column('D.O.B', width=100)
-        Student_table.column('Address', width=150)
+        Scroll_x.config(command=self.Student_table.xview)
+        Scroll_y.config(command=self.Student_table.yview)
+        self.Student_table.heading('Name', text='Name')
+        self.Student_table.heading('Roll no.', text='Roll no.')
+        self.Student_table.heading('Email', text='Email')
+        self.Student_table.heading('Gender', text='Gender')
+        self.Student_table.heading('Contact', text='Contact')
+        self.Student_table.heading('D.O.B', text='D.O.B')
+        self.Student_table.heading('Address', text='Address')
+        self.Student_table.column('Name', width=100)
+        self.Student_table.column('Roll no.', width=100)
+        self.Student_table.column('Email', width=100)
+        self.Student_table.column('Gender', width=100)
+        self.Student_table.column('Contact', width=100)
+        self.Student_table.column('D.O.B', width=100)
+        self.Student_table.column('Address', width=150)
+        self.Student_table.bind("<ButtonRelease-1>", self.get_cursor)
 
-        Student_table['show'] = 'headings'
-        Student_table.pack(fill=BOTH, expand=1)
-
-        ####################### variable ##############################
-        self.var_choice = StringVar()
+        self.Student_table['show'] = 'headings'
+        self.Student_table.pack(fill=BOTH, expand=1)
+        self.fetch_data()
 
     ##################
 
     def add_student(self):
-        con = pymysql.connect(host="localhost", user="root", password="candycrush001", database="stp")
+        con = pymysql.connect(host="localhost", user="root", password="", database="stp")
         cur = con.cursor()
-        cur.execute("insert into students values(%s,%s,%s,%s,%s,%s,%s)",(self.name_var.get(),
-                                                                         self.roll_var.get(),
-                                                                         self.email_var.get(),
-                                                                         self.gender_var.get(),
-                                                                         self.contact_var.get(),
-                                                                         self.dob_var.get(),
-                                                                         self.text_address.get('1.0', END)
-                                                                         ))
+        cur.execute("INSERT INTO students values(%s,%s,%s,%s,%s,%s,%s)", (self.name_var.get(),
+                                                                          self.roll_var.get(),
+                                                                          self.email_var.get(),
+                                                                          self.gender_var.get(),
+                                                                          self.contact_var.get(),
+                                                                          self.dob_var.get(),
+                                                                          self.text_address.get('1.0', END)
+                                                                          ))
         con.commit()
+        self.fetch_data()
+        self.clear1()
+        con.close()
+
+    def fetch_data(self):
+        con = pymysql.connect(host="localhost", user="root", password="", database="stp")
+        cur = con.cursor()
+        cur.execute("select * from students")
+        rows = cur.fetchall()
+        if len(rows) != 0:
+            self.Student_table.delete(*self.Student_table.get_children())
+            for row in rows:
+                self.Student_table.insert('', END, values=row)
+            con.commit()
+        con.close()
+
+    def clear1(self):
+        self.name_var.set("")
+        self.roll_var.set("")
+        self.email_var.set("")
+        self.gender_var.set("")
+        self.contact_var.set("")
+        self.dob_var.set("")
+        self.text_address.delete("1.0", END)
+
+    def get_cursor(self, ev):
+        cursor_row = self.Student_table.focus()
+        contents = self.Student_table.item(cursor_row)
+        row = contents['values']
+        # print(row) #printvalue as string
+        self.name_var.set(row[0])
+        self.roll_var.set(row[1])
+        self.email_var.set(row[2])
+        self.gender_var.set(row[3])
+        self.contact_var.set(row[4])
+        self.dob_var.set(row[5])
+        self.text_address.delete("1.0", END)
+        self.text_address.insert(END, row[6])
+
+    def update_data(self):
+        con = pymysql.connect(host="localhost", user="root", password="", database="stp")
+        cur = con.cursor()
+        cur.execute("UPDATE students set name=%s, email=%s,gender=%s,contact=%s,dob=%s,address=%s where roll_no=%s",
+                    (self.name_var.get(),
+
+                     self.email_var.get(),
+                     self.gender_var.get(),
+                     self.contact_var.get(),
+                     self.dob_var.get(),
+                     self.text_address.get('1.0', END), self.roll_var.get()
+                     ))
+        con.commit()
+        self.fetch_data()
+        self.clear1()
+        con.close()
+
+    def Delete_Data(self):
+        con = pymysql.connect(host="localhost", user="root", password="", database="stp")
+        cur = con.cursor()
+        cur.execute("DELETE FROM `students` WHERE roll_no=%s", self.roll_var.get())
+        con.commit()
+        con.close()
+        self.fetch_data()
+        self.clear1()
+
+    def search_data(self):
+        con = pymysql.connect(host="localhost", user="root", password="", database="stp")
+        cur = con.cursor()
+        cur.execute("SELECT * FROM students WHERE " + str(self.search_s.get())+"LIKE '%"+str(self.search_text.get())+"%'")
+
+        rows = cur.fetchall()
+        if len(rows) != 0:
+            self.Student_table.delete(*self.Student_table.get_children())
+            for row in rows:
+                self.Student_table.insert('', END, values=row)
+            con.commit()
         con.close()
 
 
